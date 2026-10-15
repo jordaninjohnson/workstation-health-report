@@ -5,6 +5,7 @@
 [![CI: Windows and Linux](https://github.com/jordaninjohnson/workstation-health-report/actions/workflows/ci.yml/badge.svg)](https://github.com/jordaninjohnson/workstation-health-report/actions/workflows/ci.yml)
 [![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)](pyproject.toml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-555555)](LICENSE)
+[![Latest release](https://img.shields.io/github/v/release/jordaninjohnson/workstation-health-report?label=release)](https://github.com/jordaninjohnson/workstation-health-report/releases/tag/v0.1.0)
 
 A **privacy-first, read-only Python command-line application** for collecting basic hardware and operating-system inventory, evaluating a small number of resource thresholds, and generating understandable **HTML and JSON reports**. Designed for people learning computer troubleshooting, IT technicians who need a local snapshot, and developers exploring practical Python automation.
 
@@ -71,7 +72,11 @@ python3 -m venv .venv
 
 Linux runtime behavior has been exercised in an isolated development environment; **macOS behavior has not been verified on actual hardware**. See the [platform matrix](#platform-support-and-verification).
 
-### Try it without scanning your computer
+## Versioned release download
+
+[**v0.1.0 release notes and downloads**](https://github.com/jordaninjohnson/workstation-health-report/releases/tag/v0.1.0) include a built Python wheel alongside GitHub’s source archives. To install the downloaded wheel into an active virtual environment, run `python -m pip install ./workstation_health_report-0.1.0-py3-none-any.whl`. Installation may fetch `psutil`; running a scan does not contact the network. The wheel is not a standalone executable and requires Python.
+
+## Try it without scanning your computer
 
 Synthetic reports are ideal for an interview demo, evaluating the layout, or contributing without publishing real workstation information:
 
@@ -86,7 +91,7 @@ python -m workstation_health demo --output demo-reports
 
 Every demo is prominently marked **SYNTHETIC** in its report. Running `demo` does not call the host collectors. Paths `demo-healthy/`, `demo-attention/` and `demo-reports/` are local output directories; **never commit actual scan reports**.
 
-### CLI reference
+## CLI reference
 
 Once you have activated your virtual environment, or by using the equivalent `.venv` Python executable:
 
@@ -203,7 +208,7 @@ The tests use fixtures and mocks for errors, boundary values and platform-specif
 
 A typical path is **Fork → Clone your fork → Create a branch → Change and test → Open a pull request**. Please read the [contributor guide](CONTRIBUTING.md), use the [issue templates](.github/ISSUE_TEMPLATE/), and follow the [pull request checklist](.github/PULL_REQUEST_TEMPLATE.md). Describe platform behavior honestly and use **synthetic**, not personal, system data. For vulnerabilities, follow [SECURITY.md](SECURITY.md) instead of opening a public issue with sensitive details.
 
-If you want a small place to start, consider: improving Windows installation troubleshooting, adding a synthetic edge-case test for unavailable CPU evidence, or improving accessible text in the report. See the [starter contribution ideas](CONTRIBUTING.md#starter-contribution-ideas) for manageable scopes.
+If you want a small place to start, consider: improving Windows installation troubleshooting, adding a synthetic edge-case test for unavailable CPU evidence, or improving accessible text in the report. See the [starter contribution ideas](CONTRIBUTING.md#starter-contribution-ideas) or browse [good-first issues](https://github.com/jordaninjohnson/workstation-health-report/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22) for manageable scopes.
 
 ## Roadmap (not yet implemented)
 
