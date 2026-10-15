@@ -16,6 +16,7 @@ from workstation_health.privacy import issue, safe_label, unavailable_reason
 def test_disallowed_filesystems_and_remote_devices():
     def part(fs, opts="rw", device="/dev/vda1"):
         return SimpleNamespace(fstype=fs, opts=opts, device=device)
+
     assert collector.include_volume(part("ext4"))
     for fs in ("nfs", "cifs", "overlay", "fuse.sshfs", "tmpfs", "9p", ""):
         assert not collector.include_volume(part(fs))
