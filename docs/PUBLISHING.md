@@ -1,5 +1,7 @@
 # Maintainer publishing and release checklist
 
+The [v0.1.0 release](https://github.com/jordaninjohnson/workstation-health-report/releases/tag/v0.1.0) was published from CI-verified commit `f6ddafc11364ff89b4311f3025a8071720f46d41` after the [four-job hosted matrix passed](https://github.com/jordaninjohnson/workstation-health-report/actions/runs/38681589575). Subsequent release work should follow the checks below.
+
 This project targets the public repository [`jordaninjohnson/workstation-health-report`](https://github.com/jordaninjohnson/workstation-health-report). Whether the repository actually contains this tree, has passing Actions, and has a published release **must be verified through GitHub**; local tests and prepared Git commits are not equivalent to publication.
 
 ## First upload
