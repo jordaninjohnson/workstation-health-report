@@ -17,14 +17,23 @@ GIB = 1024**3
 
 
 def disk(free_gib: float, total_gib: float = 100) -> list[dict]:
-    return [{"label": "Local volume 1", "total_bytes": total_gib * GIB,
-             "free_bytes": free_gib * GIB}]
+    return [
+        {"label": "Local volume 1", "total_bytes": total_gib * GIB, "free_bytes": free_gib * GIB}
+    ]
 
 
-@pytest.mark.parametrize("free_gib,expected", [
-    (16, "OK"), (15, "WARNING"), (10, "WARNING"),
-    (5.001, "WARNING"), (5, "CRITICAL"), (2, "CRITICAL"), (1, "CRITICAL"),
-])
+@pytest.mark.parametrize(
+    "free_gib,expected",
+    [
+        (16, "OK"),
+        (15, "WARNING"),
+        (10, "WARNING"),
+        (5.001, "WARNING"),
+        (5, "CRITICAL"),
+        (2, "CRITICAL"),
+        (1, "CRITICAL"),
+    ],
+)
 def test_disk_percent_boundaries(free_gib, expected):
     # Default 10GiB warning and 2GiB critical absolute thresholds; note exact boundaries.
     assert assess_disk(disk(free_gib), Thresholds())["status"] == expected
@@ -33,7 +42,9 @@ def test_disk_percent_boundaries(free_gib, expected):
 def test_disk_absolute_threshold_independent_of_percentage():
     assert assess_disk(disk(10.0, 50), Thresholds())["status"] == "WARNING"
     assert assess_disk(disk(2.0, 20), Thresholds())["status"] == "CRITICAL"
-    assert assess_disk(disk(10.01, 1000), Thresholds())["status"] == "CRITICAL"  # percentage rule overrides absolute threshold
+    assert (
+        assess_disk(disk(10.01, 1000), Thresholds())["status"] == "CRITICAL"
+    )  # percentage rule overrides absolute threshold
 
 
 def test_disk_combination_critical_overrides():
@@ -47,12 +58,23 @@ def test_disk_no_usable_data_unknown():
     assert assess_disk([{"total_bytes": 0, "free_bytes": 0}], Thresholds())["status"] == "UNKNOWN"
 
 
-@pytest.mark.parametrize("pct,expected", [(None, "UNKNOWN"), (-1, "UNKNOWN"), (101, "UNKNOWN"),
-                                          (84.99, "OK"), (85, "WARNING"), (94.9, "WARNING"), (95, "CRITICAL")])
+@pytest.mark.parametrize(
+    "pct,expected",
+    [
+        (None, "UNKNOWN"),
+        (-1, "UNKNOWN"),
+        (101, "UNKNOWN"),
+        (84.99, "OK"),
+        (85, "WARNING"),
+        (94.9, "WARNING"),
+        (95, "CRITICAL"),
+    ],
+)
 def test_memory_cpu_boundaries(pct, expected):
     for check_id in ("memory.utilization", "cpu.utilization"):
-        result = assess_percent(check_id, "Use", pct, warning=85, critical=95,
-                                source="mock", limitations="snapshot")
+        result = assess_percent(
+            check_id, "Use", pct, warning=85, critical=95, source="mock", limitations="snapshot"
+        )
         assert result["status"] == expected
 
 
@@ -84,8 +106,11 @@ def test_threshold_validation():
 
 
 def test_aggregate_no_unknown_as_ok():
-    checks = [{"id": "a", "status": "OK"}, {"id": "b", "status": "UNKNOWN"},
-              {"id": "c", "status": "NOT_APPLICABLE"}]
+    checks = [
+        {"id": "a", "status": "OK"},
+        {"id": "b", "status": "UNKNOWN"},
+        {"id": "c", "status": "NOT_APPLICABLE"},
+    ]
     summary = summarize(checks)
     assert summary["evaluated"] == 1
     assert summary["total"] == 2

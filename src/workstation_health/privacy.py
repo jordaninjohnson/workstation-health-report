@@ -68,7 +68,9 @@ def issue(component: str, reason: str) -> dict[str, str]:
     }
 
 
-COMPONENTS = frozenset({"cpu", "memory", "battery", "storage", "network", "system", "security", "other"})
+COMPONENTS = frozenset(
+    {"cpu", "memory", "battery", "storage", "network", "system", "security", "other"}
+)
 
 
 # Exact public report schema. Unknown keys never leave internal collectors.
@@ -83,28 +85,89 @@ def public_report(raw: dict[str, Any]) -> dict[str, Any]:
         return {key: source.get(key) for key in names}
 
     storage = [
-        fields(item, ("label", "filesystem", "total_bytes", "used_bytes", "free_bytes", "used_percent"))
+        fields(
+            item, ("label", "filesystem", "total_bytes", "used_bytes", "free_bytes", "used_percent")
+        )
         for item in inv.get("storage", [])
     ]
-    interfaces = [fields(item, ("label", "is_up", "speed_mbps")) for item in network.get("interfaces", [])]
+    interfaces = [
+        fields(item, ("label", "is_up", "speed_mbps")) for item in network.get("interfaces", [])
+    ]
     checks = [
-        fields(item, ("id", "title", "status", "evidence", "rule", "interpretation", "next_step", "source", "limitations"))
+        fields(
+            item,
+            (
+                "id",
+                "title",
+                "status",
+                "evidence",
+                "rule",
+                "interpretation",
+                "next_step",
+                "source",
+                "limitations",
+            ),
+        )
         for item in raw.get("checks", [])
     ]
     return {
         "schema_version": raw.get("schema_version"),
         "application": fields(raw.get("application", {}), ("name", "version")),
         "scan": fields(raw.get("scan", {}), ("timestamp", "privacy_mode", "synthetic", "scenario")),
-        "summary": fields(raw.get("summary", {}), ("headline", "status_counts", "evaluated", "total", "coverage", "actionable_check_ids", "unavailable_check_ids")),
+        "summary": fields(
+            raw.get("summary", {}),
+            (
+                "headline",
+                "status_counts",
+                "evaluated",
+                "total",
+                "coverage",
+                "actionable_check_ids",
+                "unavailable_check_ids",
+            ),
+        ),
         "inventory": {
-            "system": fields(system, ("os", "os_version", "architecture", "kernel", "python_version", "boot_time", "uptime_seconds", "environment_evidence")),
-            "hardware": fields(hardware, ("manufacturer", "model", "cpu_model", "physical_cores", "logical_cores", "ram_total_bytes", "ram_available_bytes", "ram_used_percent", "battery_present", "battery_percent", "battery_plugged_in")),
+            "system": fields(
+                system,
+                (
+                    "os",
+                    "os_version",
+                    "architecture",
+                    "kernel",
+                    "python_version",
+                    "boot_time",
+                    "uptime_seconds",
+                    "environment_evidence",
+                ),
+            ),
+            "hardware": fields(
+                hardware,
+                (
+                    "manufacturer",
+                    "model",
+                    "cpu_model",
+                    "physical_cores",
+                    "logical_cores",
+                    "ram_total_bytes",
+                    "ram_available_bytes",
+                    "ram_used_percent",
+                    "battery_present",
+                    "battery_percent",
+                    "battery_plugged_in",
+                ),
+            ),
             "resources": fields(resources, ("cpu_percent", "cpu_sample_seconds")),
             "storage": storage,
-            "network": {**fields(network, ("interface_count", "interfaces_up")), "interfaces": interfaces},
+            "network": {
+                **fields(network, ("interface_count", "interfaces_up")),
+                "interfaces": interfaces,
+            },
         },
         "checks": checks,
-        "collection_issues": [issue(i.get("component", "other"), i.get("reason", "collection_error")) for i in raw.get("collection_issues", [])],
+        "collection_issues": [
+            issue(i.get("component", "other"), i.get("reason", "collection_error"))
+            for i in raw.get("collection_issues", [])
+        ],
         "limitations": list(LIMITATIONS),
     }
 

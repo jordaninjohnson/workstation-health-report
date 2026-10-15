@@ -9,21 +9,34 @@ from .evaluate import Thresholds, evaluate, summarize
 from .privacy import public_report
 
 
-def compose(observation: dict[str, Any], *, limits: Thresholds | None = None,
-            synthetic: bool = False, scenario: str | None = None) -> dict[str, Any]:
+def compose(
+    observation: dict[str, Any],
+    *,
+    limits: Thresholds | None = None,
+    synthetic: bool = False,
+    scenario: str | None = None,
+) -> dict[str, Any]:
     limits = limits or Thresholds()
     limits.validate()
     checks = observation.get("checks")
     if checks is None:
         checks = evaluate(observation["inventory"], limits)
-    checks = sorted(checks, key=lambda c: (
-        {"CRITICAL": 0, "WARNING": 1, "UNKNOWN": 2, "OK": 3, "NOT_APPLICABLE": 4}[c["status"]], c["id"]
-    ))
+    checks = sorted(
+        checks,
+        key=lambda c: (
+            {"CRITICAL": 0, "WARNING": 1, "UNKNOWN": 2, "OK": 3, "NOT_APPLICABLE": 4}[c["status"]],
+            c["id"],
+        ),
+    )
     raw = {
         "schema_version": SCHEMA_VERSION,
         "application": {"name": "Workstation Inventory & Health Report", "version": __version__},
-        "scan": {"timestamp": observation["timestamp"], "privacy_mode": "default-minimal",
-                 "synthetic": synthetic, "scenario": scenario},
+        "scan": {
+            "timestamp": observation["timestamp"],
+            "privacy_mode": "default-minimal",
+            "synthetic": synthetic,
+            "scenario": scenario,
+        },
         "summary": summarize(checks),
         "inventory": observation["inventory"],
         "checks": checks,

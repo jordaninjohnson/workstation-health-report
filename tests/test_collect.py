@@ -14,7 +14,9 @@ from workstation_health.privacy import issue, safe_label, unavailable_reason
 
 
 def test_disallowed_filesystems_and_remote_devices():
-    part = lambda fs, opts="rw", device="/dev/vda1": SimpleNamespace(fstype=fs, opts=opts, device=device)
+    part = lambda fs, opts="rw", device="/dev/vda1": SimpleNamespace(
+        fstype=fs, opts=opts, device=device
+    )
     assert collector.include_volume(part("ext4"))
     for fs in ("nfs", "cifs", "overlay", "fuse.sshfs", "tmpfs", "9p", ""):
         assert not collector.include_volume(part(fs))
@@ -38,9 +40,11 @@ def test_privacy_safe_exception_and_label():
 
 def test_command_args_timeout_and_bad_json(monkeypatch):
     calls = []
+
     def completed(argv, **kwargs):
         calls.append((argv, kwargs))
         return SimpleNamespace(returncode=0, stdout='{"Model":"Example"}')
+
     monkeypatch.setattr(subprocess, "run", completed)
     assert run_json_command(["mock.exe", "-Property", "Model"]) == {"Model": "Example"}
     assert calls[0][0] == ["mock.exe", "-Property", "Model"]
@@ -48,24 +52,50 @@ def test_command_args_timeout_and_bad_json(monkeypatch):
     assert calls[0][1]["check"] is False
     assert "shell" not in calls[0][1]
 
-    monkeypatch.setattr(subprocess, "run", lambda *a, **k: SimpleNamespace(returncode=0, stdout="garbage"))
+    monkeypatch.setattr(
+        subprocess, "run", lambda *a, **k: SimpleNamespace(returncode=0, stdout="garbage")
+    )
     with pytest.raises(ValueError):
         run_json_command(["x"])
-    monkeypatch.setattr(subprocess, "run", lambda *a, **k: (_ for _ in ()).throw(subprocess.TimeoutExpired("x", 4)))
+    monkeypatch.setattr(
+        subprocess, "run", lambda *a, **k: (_ for _ in ()).throw(subprocess.TimeoutExpired("x", 4))
+    )
     with pytest.raises(subprocess.TimeoutExpired):
         run_json_command(["x"])
 
 
 def test_partial_failure_mock_collector(monkeypatch):
     monkeypatch.setattr(collector.platform, "system", lambda: "Linux")
-    monkeypatch.setattr(collector.psutil, "boot_time", lambda: (_ for _ in ()).throw(PermissionError("/home/someone")))
-    monkeypatch.setattr(collector.psutil, "virtual_memory", lambda: (_ for _ in ()).throw(psutil.AccessDenied(pid=1)))
+    monkeypatch.setattr(
+        collector.psutil,
+        "boot_time",
+        lambda: (_ for _ in ()).throw(PermissionError("/home/someone")),
+    )
+    monkeypatch.setattr(
+        collector.psutil,
+        "virtual_memory",
+        lambda: (_ for _ in ()).throw(psutil.AccessDenied(pid=1)),
+    )
     monkeypatch.setattr(collector.psutil, "sensors_battery", lambda: None)
     monkeypatch.setattr(collector.psutil, "cpu_percent", lambda interval: 22.5)
     monkeypatch.setattr(collector.psutil, "cpu_count", lambda logical: 8 if logical else 4)
-    monkeypatch.setattr(collector.psutil, "disk_partitions", lambda all: [SimpleNamespace(mountpoint="/secret/home", device="/dev/sda1", fstype="ext4", opts="rw")])
-    monkeypatch.setattr(collector.psutil, "disk_usage", lambda p: (_ for _ in ()).throw(PermissionError("alice private path")))
-    monkeypatch.setattr(collector.psutil, "net_if_stats", lambda: {"privateSSID": SimpleNamespace(isup=True, speed=1000)})
+    monkeypatch.setattr(
+        collector.psutil,
+        "disk_partitions",
+        lambda all: [
+            SimpleNamespace(mountpoint="/secret/home", device="/dev/sda1", fstype="ext4", opts="rw")
+        ],
+    )
+    monkeypatch.setattr(
+        collector.psutil,
+        "disk_usage",
+        lambda p: (_ for _ in ()).throw(PermissionError("alice private path")),
+    )
+    monkeypatch.setattr(
+        collector.psutil,
+        "net_if_stats",
+        lambda: {"privateSSID": SimpleNamespace(isup=True, speed=1000)},
+    )
     monkeypatch.setattr(collector, "manufacturer_model", lambda: ("Acme", "Desktop"))
     monkeypatch.setattr(collector, "cpu_model", lambda: "Sample CPU")
     monkeypatch.setattr(collector, "environment_evidence", lambda: None)
@@ -83,7 +113,11 @@ def test_partial_failure_mock_collector(monkeypatch):
 def test_timeout_collector_continues(monkeypatch):
     # Fully mocked: CI must not inspect runner hardware in this unit test.
     monkeypatch.setattr(collector.psutil, "boot_time", lambda: 1000)
-    monkeypatch.setattr(collector.psutil, "virtual_memory", lambda: SimpleNamespace(total=16 * 1024**3, available=8 * 1024**3, percent=50.0))
+    monkeypatch.setattr(
+        collector.psutil,
+        "virtual_memory",
+        lambda: SimpleNamespace(total=16 * 1024**3, available=8 * 1024**3, percent=50.0),
+    )
     monkeypatch.setattr(collector.psutil, "sensors_battery", lambda: None)
     monkeypatch.setattr(collector.psutil, "disk_partitions", lambda all: [])
     monkeypatch.setattr(collector.psutil, "net_if_stats", lambda: {})
@@ -91,7 +125,9 @@ def test_timeout_collector_continues(monkeypatch):
     monkeypatch.setattr(collector, "manufacturer_model", lambda: (None, None))
     monkeypatch.setattr(collector, "cpu_model", lambda: "Synthetic CPU")
     monkeypatch.setattr(collector, "environment_evidence", lambda: None)
-    monkeypatch.setattr(collector.psutil, "cpu_percent", Mock(side_effect=TimeoutError("topsecret")))
+    monkeypatch.setattr(
+        collector.psutil, "cpu_percent", Mock(side_effect=TimeoutError("topsecret"))
+    )
     data = collector.collect(sample_seconds=0.1)
     assert data["inventory"]["resources"]["cpu_percent"] is None
     assert {i["reason"] for i in data["collection_issues"]} >= {"timeout"}

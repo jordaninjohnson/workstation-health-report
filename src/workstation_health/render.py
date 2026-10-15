@@ -34,63 +34,107 @@ def render_html(data: dict[str, Any]) -> str:
     scan = data["scan"]
     summary = data["summary"]
     inventory = data["inventory"]
-    hw, sysinfo, res, network = (inventory[x] for x in ("hardware", "system", "resources", "network"))
+    hw, sysinfo, res, network = (
+        inventory[x] for x in ("hardware", "system", "resources", "network")
+    )
     synthetic = scan["synthetic"]
     banner = (
-        '<div class="synthetic" role="note"><strong>SYNTHETIC DEMONSTRATION DATA</strong> — '
-        'No computer was scanned. Values and findings are illustrative only.</div>'
-    ) if synthetic else '<div class="privacy">Local read-only scan · Minimal privacy mode · Never transmitted by this application</div>'
+        (
+            '<div class="synthetic" role="note"><strong>SYNTHETIC DEMONSTRATION DATA</strong> — '
+            "No computer was scanned. Values and findings are illustrative only.</div>"
+        )
+        if synthetic
+        else '<div class="privacy">Local read-only scan · Minimal privacy mode · Never transmitted by this application</div>'
+    )
     status_counts = "".join(
         card(s.replace("_", " ").title(), str(summary["status_counts"].get(s, 0)))
         for s in ("CRITICAL", "WARNING", "UNKNOWN", "OK", "NOT_APPLICABLE")
     )
-    overview = "".join((
-        card("CPU use, sampled", esc(stat_value(res["cpu_percent"]))),
-        card("RAM in use", esc(stat_value(hw["ram_used_percent"]))),
-        card("Available memory", esc(gib(hw["ram_available_bytes"]))),
-        card("Interfaces up", esc(network["interfaces_up"])),
-    ))
-    sysrows = "".join((
-        row("Operating system", sysinfo["os"]), row("OS version", sysinfo["os_version"]),
-        row("Kernel / build", sysinfo["kernel"]), row("Architecture", sysinfo["architecture"]),
-        row("Manufacturer", hw["manufacturer"]), row("Model", hw["model"]),
-        row("CPU", hw["cpu_model"]), row("Physical / logical cores", f"{hw['physical_cores'] or 'Unknown'} / {hw['logical_cores'] or 'Unknown'}"),
-        row("Total RAM", gib(hw["ram_total_bytes"])), row("Python", sysinfo["python_version"]),
-        row("Uptime", f"{sysinfo['uptime_seconds'] / 3600:.1f} hours" if sysinfo["uptime_seconds"] is not None else None),
-        row("Environment hint", sysinfo["environment_evidence"] or "Undetermined — not proof of a physical machine"),
-        row("Battery", "Present" if hw["battery_present"] else "Not reported"),
-        row("Battery charge", stat_value(hw["battery_percent"])),
-        row("Connected to power", hw["battery_plugged_in"]),
-    ))
-    storage_rows = "".join(
-        "<tr>" + "".join(f"<td>{v}</td>" for v in (
-            esc(d["label"]), esc(d["filesystem"]), esc(gib(d["total_bytes"])),
-            esc(gib(d["free_bytes"])), esc(stat_value(d["used_percent"])),
-        )) + "</tr>" for d in inventory["storage"]
-    ) or '<tr><td colspan="5">No readable local storage volumes.</td></tr>'
-    netrows = "".join(
-        f"<tr><td>{esc(i['label'])}</td><td>{'Up' if i['is_up'] else 'Down'}</td>"
-        f"<td>{esc(str(i['speed_mbps']) + ' Mbps' if i['speed_mbps'] else None)}</td></tr>"
-        for i in network["interfaces"]
-    ) or '<tr><td colspan="3">Interface observations unavailable.</td></tr>'
+    overview = "".join(
+        (
+            card("CPU use, sampled", esc(stat_value(res["cpu_percent"]))),
+            card("RAM in use", esc(stat_value(hw["ram_used_percent"]))),
+            card("Available memory", esc(gib(hw["ram_available_bytes"]))),
+            card("Interfaces up", esc(network["interfaces_up"])),
+        )
+    )
+    sysrows = "".join(
+        (
+            row("Operating system", sysinfo["os"]),
+            row("OS version", sysinfo["os_version"]),
+            row("Kernel / build", sysinfo["kernel"]),
+            row("Architecture", sysinfo["architecture"]),
+            row("Manufacturer", hw["manufacturer"]),
+            row("Model", hw["model"]),
+            row("CPU", hw["cpu_model"]),
+            row(
+                "Physical / logical cores",
+                f"{hw['physical_cores'] or 'Unknown'} / {hw['logical_cores'] or 'Unknown'}",
+            ),
+            row("Total RAM", gib(hw["ram_total_bytes"])),
+            row("Python", sysinfo["python_version"]),
+            row(
+                "Uptime",
+                f"{sysinfo['uptime_seconds'] / 3600:.1f} hours"
+                if sysinfo["uptime_seconds"] is not None
+                else None,
+            ),
+            row(
+                "Environment hint",
+                sysinfo["environment_evidence"] or "Undetermined — not proof of a physical machine",
+            ),
+            row("Battery", "Present" if hw["battery_present"] else "Not reported"),
+            row("Battery charge", stat_value(hw["battery_percent"])),
+            row("Connected to power", hw["battery_plugged_in"]),
+        )
+    )
+    storage_rows = (
+        "".join(
+            "<tr>"
+            + "".join(
+                f"<td>{v}</td>"
+                for v in (
+                    esc(d["label"]),
+                    esc(d["filesystem"]),
+                    esc(gib(d["total_bytes"])),
+                    esc(gib(d["free_bytes"])),
+                    esc(stat_value(d["used_percent"])),
+                )
+            )
+            + "</tr>"
+            for d in inventory["storage"]
+        )
+        or '<tr><td colspan="5">No readable local storage volumes.</td></tr>'
+    )
+    netrows = (
+        "".join(
+            f"<tr><td>{esc(i['label'])}</td><td>{'Up' if i['is_up'] else 'Down'}</td>"
+            f"<td>{esc(str(i['speed_mbps']) + ' Mbps' if i['speed_mbps'] else None)}</td></tr>"
+            for i in network["interfaces"]
+        )
+        or '<tr><td colspan="3">Interface observations unavailable.</td></tr>'
+    )
     checks = "".join(
         f'<article class="finding {esc(c["status"].lower())}">'
         f'<div class="finding-head"><h3>{esc(c["title"])}</h3><span class="tag">{esc(c["status"].replace("_", " "))}</span></div>'
         f'<p class="evidence">Observed: {esc(c["evidence"])}</p>'
-        f'<p>{esc(c["interpretation"])}</p>'
-        f'<p><b>Rule:</b> {esc(c["rule"])}</p>'
-        + (f'<p><b>Next step:</b> {esc(c["next_step"])}</p>' if c["next_step"] else "")
-        + f'<small>Source: {esc(c["source"])} · Limits: {esc(c["limitations"])} · ID: {esc(c["id"])}</small></article>'
+        f"<p>{esc(c['interpretation'])}</p>"
+        f"<p><b>Rule:</b> {esc(c['rule'])}</p>"
+        + (f"<p><b>Next step:</b> {esc(c['next_step'])}</p>" if c["next_step"] else "")
+        + f"<small>Source: {esc(c['source'])} · Limits: {esc(c['limitations'])} · ID: {esc(c['id'])}</small></article>"
         for c in data["checks"]
     )
-    issue_rows = "".join(
-        f'<li><b>{esc(i["component"])}</b> — {esc(i["reason"].replace("_", " "))}: {esc(i["detail"])}</li>'
-        for i in data["collection_issues"]
-    ) or "<li>No collection errors recorded.</li>"
+    issue_rows = (
+        "".join(
+            f"<li><b>{esc(i['component'])}</b> — {esc(i['reason'].replace('_', ' '))}: {esc(i['detail'])}</li>"
+            for i in data["collection_issues"]
+        )
+        or "<li>No collection errors recorded.</li>"
+    )
     limits = "".join(f"<li>{esc(v)}</li>" for v in data["limitations"])
     action = ", ".join(summary["actionable_check_ids"]) or "None"
     unknown = ", ".join(summary["unavailable_check_ids"]) or "None"
-    return f'''<!doctype html>
+    return f"""<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Workstation Inventory &amp; Health Report</title>
 <style>
@@ -112,18 +156,18 @@ section{{background:white;border:1px solid var(--line);border-radius:14px;paddin
 .evidence{{font-weight:650}} .finding p{{margin:.5rem 0}} .finding small{{display:block;margin-top:.8rem}}li{{margin:.4rem 0}} footer{{text-align:center;color:var(--muted);padding:2rem}}
 @media print{{body{{background:#fff;font-size:11pt}}header{{background:#fff;color:#17253c;padding:1rem 0;border-bottom:2px solid #17253c}}header p,.eyebrow{{color:#17253c}}main{{padding:0}}section{{border:0;border-bottom:1px solid #ccc;border-radius:0;margin:.5rem 0;padding:1rem 0}}.finding{{break-inside:avoid}}}}
 </style></head>
-<body><header><div class="eyebrow">Local diagnostics · v{esc(data['application']['version'])}</div>
+<body><header><div class="eyebrow">Local diagnostics · v{esc(data["application"]["version"])}</div>
 <h1>Workstation Inventory &amp; Health Report</h1>
 <p>Human-readable system facts, explainable thresholds, and clear limits. No hidden health score.</p></header>
 <main>{banner}
-<section aria-labelledby="assessment"><h2 id="assessment">Assessment overview</h2><p class="hero">{esc(summary['headline'])}</p>
-<p class="muted">{esc(summary['coverage'])} · Observed {esc(scan['timestamp'])} · Privacy: {esc(scan['privacy_mode'])}</p>
+<section aria-labelledby="assessment"><h2 id="assessment">Assessment overview</h2><p class="hero">{esc(summary["headline"])}</p>
+<p class="muted">{esc(summary["coverage"])} · Observed {esc(scan["timestamp"])} · Privacy: {esc(scan["privacy_mode"])}</p>
 <div class="grid">{status_counts}</div><p><b>Actionable checks:</b> {esc(action)}. <b>Unavailable:</b> {esc(unknown)}.</p></section>
-<section><h2>Resource snapshot</h2><p class="muted">A momentary observation, not a sustained performance test. CPU sample interval: {esc(res['cpu_sample_seconds'])} seconds.</p><div class="grid">{overview}</div></section>
+<section><h2>Resource snapshot</h2><p class="muted">A momentary observation, not a sustained performance test. CPU sample interval: {esc(res["cpu_sample_seconds"])} seconds.</p><div class="grid">{overview}</div></section>
 <section><h2>Hardware &amp; operating system</h2><div class="scroll"><table><tbody>{sysrows}</tbody></table></div></section>
 <section><h2>Local storage</h2><div class="scroll"><table><thead><tr><th>Volume</th><th>Filesystem</th><th>Capacity</th><th>Free</th><th>Used</th></tr></thead><tbody>{storage_rows}</tbody></table></div><small>1 GiB = 1,073,741,824 bytes. Network, pseudo and removable filesystems are excluded when identifiable. Names and mount paths are intentionally omitted.</small></section>
 <section><h2>Network interfaces</h2><div class="scroll"><table><thead><tr><th>Interface</th><th>Operational state</th><th>Reported link speed</th></tr></thead><tbody>{netrows}</tbody></table></div><small>No addresses, network names or connection testing. Link speed is not throughput; up does not mean online.</small></section>
 <section><h2>Findings, ordered by importance</h2>{checks}</section>
 <section><h2>Collection limitations</h2><ul>{issue_rows}</ul></section>
 <section><h2>What this report does not verify</h2><ul>{limits}</ul></section>
-</main><footer>Workstation Inventory &amp; Health Report · Offline, local-only report · v{esc(data['application']['version'])}</footer></body></html>'''
+</main><footer>Workstation Inventory &amp; Health Report · Offline, local-only report · v{esc(data["application"]["version"])}</footer></body></html>"""

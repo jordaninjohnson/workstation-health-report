@@ -38,15 +38,19 @@ def manufacturer_model() -> tuple[str | None, str | None]:
             "Get-CimInstance Win32_ComputerSystem | "
             "Select-Object -Property Manufacturer,Model | ConvertTo-Json -Compress"
         )
-        data = run_json_command(["powershell.exe", "-NoProfile", "-NonInteractive", "-Command", script])
+        data = run_json_command(
+            ["powershell.exe", "-NoProfile", "-NonInteractive", "-Command", script]
+        )
         return safe_label(data.get("Manufacturer")), safe_label(data.get("Model"))
     if system == "Linux":
         root = Path("/sys/class/dmi/id")
+
         def read(name: str) -> str | None:
             try:
                 return safe_label((root / name).read_text(encoding="utf-8"))
             except (OSError, UnicodeError):
                 return None
+
         return read("sys_vendor"), read("product_name")
     return None, None
 
@@ -63,7 +67,10 @@ def cpu_model() -> str | None:
     if platform.system() == "Windows":
         try:
             import winreg
-            with winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, r"HARDWARE\DESCRIPTION\System\CentralProcessor\0") as key:
+
+            with winreg.OpenKey(
+                winreg.HKEY_LOCAL_MACHINE, r"HARDWARE\DESCRIPTION\System\CentralProcessor\0"
+            ) as key:
                 return safe_label(winreg.QueryValueEx(key, "ProcessorNameString")[0])
         except (OSError, ImportError):
             pass

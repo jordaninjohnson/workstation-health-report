@@ -5,8 +5,7 @@ from unittest.mock import Mock
 
 import pytest
 
-from workstation_health import SCHEMA_VERSION
-from workstation_health import cli
+from workstation_health import SCHEMA_VERSION, cli
 from workstation_health.demo import synthetic_observation
 from workstation_health.render import render_html
 from workstation_health.report import compose
@@ -18,12 +17,32 @@ def test_report_schema_and_no_unexpected_raw_keys(inventory):
     obs["inventory"]["network"]["ip_address"] = "10.1.2.3"
     obs["inventory"]["storage"][0]["mountpoint"] = "/home/private"
     obs["secret"] = "TOKEN_PRIVATE"
-    obs["collection_issues"] = [{"component": "storage", "reason": "permission_denied", "detail": "/Users/jane/secret"}]
+    obs["collection_issues"] = [
+        {"component": "storage", "reason": "permission_denied", "detail": "/Users/jane/secret"}
+    ]
     data = compose(obs, synthetic=True)
     encoded = json.dumps(data)
     assert data["schema_version"] == SCHEMA_VERSION
-    assert set(data) == {"schema_version", "application", "scan", "summary", "inventory", "checks", "collection_issues", "limitations"}
-    assert all(secret not in encoded for secret in ("SERIAL-PRIVATE", "TOKEN_PRIVATE", "10.1.2.3", "/home/private", "/Users/jane"))
+    assert set(data) == {
+        "schema_version",
+        "application",
+        "scan",
+        "summary",
+        "inventory",
+        "checks",
+        "collection_issues",
+        "limitations",
+    }
+    assert all(
+        secret not in encoded
+        for secret in (
+            "SERIAL-PRIVATE",
+            "TOKEN_PRIVATE",
+            "10.1.2.3",
+            "/home/private",
+            "/Users/jane",
+        )
+    )
     assert data["inventory"]["hardware"]["battery_percent"] is None
     assert data["scan"]["synthetic"] is True
 
@@ -31,12 +50,12 @@ def test_report_schema_and_no_unexpected_raw_keys(inventory):
 def test_html_escaping_even_in_unexpected_values():
     obs = synthetic_observation("healthy")
     obs["inventory"]["hardware"]["cpu_model"] = '<script>alert("oops")</script>'
-    obs["inventory"]["storage"][0]["label"] = '<img src=x onerror=alert(1)>'
+    obs["inventory"]["storage"][0]["label"] = "<img src=x onerror=alert(1)>"
     html = render_html(compose(obs, synthetic=True))
     assert "<script>" not in html
     assert "<img src=x" not in html
-    assert '&lt;script&gt;' in html
-    assert 'onerror=alert(1)&gt;' in html
+    assert "&lt;script&gt;" in html
+    assert "onerror=alert(1)&gt;" in html
     assert "SYNTHETIC DEMONSTRATION DATA" in html
     assert "http://" not in html and "https://" not in html
 
@@ -75,7 +94,9 @@ def test_collision_and_explicit_overwrite(tmp_path):
     before = file.read_bytes()
     assert cli.main(["demo", "--scenario", "healthy", "--output", str(tmp_path)]) == 2
     assert file.read_bytes() == before
-    assert cli.main(["demo", "--scenario", "healthy", "--output", str(tmp_path), "--overwrite"]) == 0
+    assert (
+        cli.main(["demo", "--scenario", "healthy", "--output", str(tmp_path), "--overwrite"]) == 0
+    )
     assert file.read_bytes() == before
 
 
@@ -92,7 +113,9 @@ def test_scan_with_stubbed_collector_and_json_only(monkeypatch, tmp_path):
     assert cli.main(["scan", "--output", str(tmp_path), "--format", "json"]) == 0
     assert (tmp_path / "workstation-health.json").exists()
     assert not (tmp_path / "workstation-health.html").exists()
-    assert json.loads((tmp_path / "workstation-health.json").read_text())["scan"]["synthetic"] is False
+    assert (
+        json.loads((tmp_path / "workstation-health.json").read_text())["scan"]["synthetic"] is False
+    )
 
 
 def test_fatal_error_does_not_print_sensitive_exception(monkeypatch, tmp_path, capsys):
