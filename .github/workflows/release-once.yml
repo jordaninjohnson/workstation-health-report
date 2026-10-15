@@ -1,0 +1,69 @@
+# One-time, owner-authorized release preparation. Delete this workflow after success.
+name: Publish initial v0.1.0 release
+on:
+  push:
+    paths:
+      - .github/workflows/release-once.yml
+
+permissions: {}
+
+jobs:
+  release:
+    if: github.repository == 'jordaninjohnson/workstation-health-report' && github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: f6ddafc11364ff89b4311f3025a8071720f46d41
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.13'
+      - name: Build release wheel
+        run: |
+          python -m pip install --upgrade build
+          python -m build --wheel
+          python -m pip install dist/*.whl
+          workstation-health --version
+          workstation-health demo --scenario attention-needed --output "$RUNNER_TEMP/whr-release-smoke" --format html,json
+      - name: Write release notes
+        shell: bash
+        run: |
+          cat > "$RUNNER_TEMP/RELEASE_NOTES.md" <<'NOTES'
+          # Workstation Inventory & Health Report v0.1.0
+
+          Initial public, privacy-first release of a **read-only local workstation inventory and resource-diagnostics CLI**.
+
+          ## Included
+          - Operating-system, CPU, memory, storage, battery and interface inventory when accessible.
+          - Documented storage, CPU, memory and battery rules with explicit OK/WARNING/CRITICAL/UNKNOWN/NOT_APPLICABLE findings.
+          - Terminal summary, self-contained HTML, versioned JSON and two clearly labeled synthetic demonstration scenarios.
+          - Field-allowlisted reports, safe failure descriptions and no telemetry or automatic system changes.
+          - Contributor guide, issue/PR templates, tests and documentation.
+
+          ## Installation
+          Requires Python 3.10 or newer. From a checkout, create a virtual environment and run `python -m pip install -e .`. Alternatively, install the attached pure-Python wheel with pip and use:
+          ```
+          workstation-health demo --scenario attention-needed --output demo-reports
+          workstation-health scan --output reports --format html,json
+          ```
+          Scan only an authorized personal or lab machine. The first command generates **synthetic** data without probing the host.
+
+          ## Verification and limits
+          Hosted GitHub Actions passed on Ubuntu and Windows using Python 3.10 and 3.13, including lint, formatting, mocked unit tests and a synthetic CLI smoke test. A local Linux development scan was exercised. **Real Windows 11 and macOS device collection remain unverified.** Windows Defender is reported as UNKNOWN; firewall and encryption assessment are not implemented. The tool does not verify malware absence, vulnerability status, SMART health, backups or overall security posture.
+
+          See the [README](https://github.com/jordaninjohnson/workstation-health-report#readme), [privacy guide](https://github.com/jordaninjohnson/workstation-health-report/blob/main/docs/PRIVACY.md), and [contributing instructions](https://github.com/jordaninjohnson/workstation-health-report/blob/main/CONTRIBUTING.md).
+
+          This is an independent educational software project; no enterprise deployment or commercial usage is claimed.
+          NOTES
+      - name: Create GitHub tag, release and wheel asset
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create v0.1.0 dist/*.whl \
+            --repo "$GITHUB_REPOSITORY" \
+            --target "f6ddafc11364ff89b4311f3025a8071720f46d41" \
+            --title "v0.1.0 — Initial public release" \
+            --notes-file "$RUNNER_TEMP/RELEASE_NOTES.md"
