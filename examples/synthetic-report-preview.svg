@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="500" viewBox="0 0 1080 500" role="img" aria-labelledby="title desc">
+<title id="title">Synthetic attention-needed HTML report preview</title><desc id="desc">Illustrative report summary showing a critical disk finding, unknown Windows security check and evaluation coverage.</desc>
+<rect width="1080" height="500" fill="#f4f7fb"/><rect width="1080" height="165" fill="#132f51"/>
+<text x="52" y="46" fill="#c6dff8" font-size="16" font-family="Arial,sans-serif" font-weight="bold">LOCAL DIAGNOSTICS  •  VERSION 0.1.0</text>
+<text x="52" y="98" fill="white" font-size="32" font-family="Arial,sans-serif" font-weight="bold">Workstation Inventory &amp; Health Report</text>
+<text x="52" y="134" fill="#dfebf5" font-size="18" font-family="Arial,sans-serif">Explainable checks with explicit assessment coverage</text>
+<rect x="52" y="185" width="976" height="57" rx="8" fill="#fff2d9" stroke="#986100" stroke-width="2"/>
+<text x="70" y="221" fill="#653e00" font-size="17" font-family="Arial,sans-serif" font-weight="bold">SYNTHETIC DEMONSTRATION DATA — No computer was scanned.</text>
+<rect x="52" y="260" width="976" height="205" rx="12" fill="white" stroke="#d9e2e9"/>
+<text x="75" y="300" fill="#17253c" font-size="20" font-family="Arial,sans-serif" font-weight="bold">Assessment overview</text>
+<text x="75" y="334" fill="#17253c" font-size="20" font-family="Arial,sans-serif" font-weight="bold">Critical findings need attention. Some checks could not be completed.</text>
+<text x="75" y="363" fill="#4c6075" font-size="16" font-family="Arial,sans-serif">3 of 4 applicable checks evaluated; 1 not applicable.</text>
+<rect x="75" y="390" width="215" height="56" rx="8" fill="#f9fbfd" stroke="#d9e2e9"/><text x="92" y="411" font-size="13" fill="#4c6075" font-family="Arial,sans-serif">CRITICAL</text><text x="92" y="438" font-size="24" font-weight="bold" fill="#b12c35" font-family="Arial,sans-serif">1</text>
+<rect x="309" y="390" width="215" height="56" rx="8" fill="#f9fbfd" stroke="#d9e2e9"/><text x="326" y="411" font-size="13" fill="#4c6075" font-family="Arial,sans-serif">UNKNOWN</text><text x="326" y="438" font-size="24" font-weight="bold" fill="#17253c" font-family="Arial,sans-serif">1</text>
+<rect x="543" y="390" width="215" height="56" rx="8" fill="#f9fbfd" stroke="#d9e2e9"/><text x="560" y="411" font-size="13" fill="#4c6075" font-family="Arial,sans-serif">OK</text><text x="560" y="438" font-size="24" font-weight="bold" fill="#24724a" font-family="Arial,sans-serif">2</text>
+<rect x="777" y="390" width="227" height="56" rx="8" fill="#f9fbfd" stroke="#d9e2e9"/><text x="794" y="411" font-size="13" fill="#4c6075" font-family="Arial,sans-serif">NOT APPLICABLE</text><text x="794" y="438" font-size="24" font-weight="bold" fill="#17253c" font-family="Arial,sans-serif">1</text>
+</svg>

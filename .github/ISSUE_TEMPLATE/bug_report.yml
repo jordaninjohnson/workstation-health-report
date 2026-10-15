@@ -1,0 +1,52 @@
+name: Bug report
+description: Report reproducible behavior using synthetic or sanitized details
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting an issue. **Do not paste real workstation reports, credentials, usernames, hostnames, IP/MAC addresses, serial numbers, personal paths, or raw logs.** Prefer `workstation-health demo` or synthetic data. Security concerns belong in the private channel described by SECURITY.md.
+  - type: input
+    id: version
+    attributes:
+      label: Tool and Python versions
+      placeholder: workstation-health 0.1.0; Python 3.13
+    validations:
+      required: true
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Platform
+      options: [Windows 11, Linux, macOS, Other / unknown]
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to reproduce (safe, sanitized)
+      placeholder: Commands using synthetic scenarios only, where possible
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior (no private diagnostics)
+    validations:
+      required: true
+  - type: textarea
+    id: tests
+    attributes:
+      label: Relevant test or verification results (optional)
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: Privacy review
+      options:
+        - label: I removed identifying, sensitive and employer-specific information.
+          required: true

@@ -1,0 +1,160 @@
+{
+  "schema_version": "1.0",
+  "application": {
+    "name": "Workstation Inventory & Health Report",
+    "version": "0.1.0"
+  },
+  "scan": {
+    "timestamp": "2026-01-15T10:30:00-07:00",
+    "privacy_mode": "default-minimal",
+    "synthetic": true,
+    "scenario": "attention-needed"
+  },
+  "summary": {
+    "headline": "Critical findings need attention. Some checks could not be completed.",
+    "status_counts": {
+      "OK": 2,
+      "WARNING": 0,
+      "CRITICAL": 1,
+      "UNKNOWN": 1,
+      "NOT_APPLICABLE": 1
+    },
+    "evaluated": 3,
+    "total": 4,
+    "coverage": "3 of 4 applicable checks evaluated; 1 not applicable.",
+    "actionable_check_ids": [
+      "storage.free"
+    ],
+    "unavailable_check_ids": [
+      "security.windows_defender"
+    ]
+  },
+  "inventory": {
+    "system": {
+      "os": "Windows",
+      "os_version": "11 (illustrative)",
+      "architecture": "AMD64",
+      "kernel": "Synthetic build",
+      "python_version": "3.13 (synthetic)",
+      "boot_time": "2026-01-01T09:00:00+00:00",
+      "uptime_seconds": 172800,
+      "environment_evidence": null
+    },
+    "hardware": {
+      "manufacturer": "Example Devices",
+      "model": "Example Workstation",
+      "cpu_model": "Synthetic 8-Core CPU",
+      "physical_cores": 8,
+      "logical_cores": 16,
+      "ram_total_bytes": 17179869184,
+      "ram_available_bytes": 10737418240,
+      "ram_used_percent": 37.5,
+      "battery_present": false,
+      "battery_percent": null,
+      "battery_plugged_in": null
+    },
+    "resources": {
+      "cpu_percent": 18.4,
+      "cpu_sample_seconds": 0.25
+    },
+    "storage": [
+      {
+        "label": "Local volume 1",
+        "filesystem": "NTFS",
+        "total_bytes": 549755813888,
+        "used_bytes": 544387104768,
+        "free_bytes": 5368709120,
+        "used_percent": 99.02
+      }
+    ],
+    "network": {
+      "interface_count": 2,
+      "interfaces_up": 1,
+      "interfaces": [
+        {
+          "label": "Interface 1",
+          "is_up": true,
+          "speed_mbps": 1000
+        },
+        {
+          "label": "Interface 2",
+          "is_up": false,
+          "speed_mbps": null
+        }
+      ]
+    }
+  },
+  "checks": [
+    {
+      "id": "storage.free",
+      "title": "Local disk capacity",
+      "status": "CRITICAL",
+      "evidence": "Local volume 1: 5.0 GiB (1.0%) free",
+      "rule": "WARNING if free <= 15% OR <= 10 GiB; CRITICAL if free <= 5% OR <= 2 GiB. Critical overrides warning; boundaries are inclusive.",
+      "interpretation": "One or more local volumes have limited free capacity.",
+      "next_step": "Review storage usage and free space; no files are changed by this tool.",
+      "source": "psutil.disk_partitions + disk_usage",
+      "limitations": "Does not assess disk wear or all possible mounts; filesystem reads can block."
+    },
+    {
+      "id": "security.windows_defender",
+      "title": "Microsoft Defender status",
+      "status": "UNKNOWN",
+      "evidence": "No provider result available",
+      "rule": "Reliable Windows-only provider required.",
+      "interpretation": "Security status cannot be inferred from missing evidence.",
+      "next_step": "Review Windows Security locally.",
+      "source": "Synthetic provider response",
+      "limitations": "No actual device was inspected; other antivirus tools are not evaluated."
+    },
+    {
+      "id": "cpu.utilization",
+      "title": "CPU utilization",
+      "status": "OK",
+      "evidence": "18.4% used",
+      "rule": "WARNING at >= 85%; CRITICAL at >= 95%; boundaries inclusive.",
+      "interpretation": "This snapshot did not cross a utilization threshold.",
+      "next_step": null,
+      "source": "psutil.cpu_percent(interval=0.25s)",
+      "limitations": "A short sampled interval is not sustained workload analysis."
+    },
+    {
+      "id": "memory.utilization",
+      "title": "Memory utilization",
+      "status": "OK",
+      "evidence": "37.5% used",
+      "rule": "WARNING at >= 85%; CRITICAL at >= 95%; boundaries inclusive.",
+      "interpretation": "This snapshot did not cross a utilization threshold.",
+      "next_step": null,
+      "source": "psutil.virtual_memory",
+      "limitations": "One sample does not diagnose a leak or determine adequate RAM."
+    },
+    {
+      "id": "battery.charge",
+      "title": "Battery charge",
+      "status": "NOT_APPLICABLE",
+      "evidence": "No battery reported",
+      "rule": "If unplugged: WARNING at <= 20% charge; CRITICAL at <= 10%; otherwise informational.",
+      "interpretation": "A battery is not reported on this machine.",
+      "next_step": null,
+      "source": "psutil.sensors_battery",
+      "limitations": "Battery may be unreported by the OS."
+    }
+  ],
+  "collection_issues": [
+    {
+      "component": "security",
+      "reason": "unsupported",
+      "detail": "This source is not available on this platform."
+    }
+  ],
+  "limitations": [
+    "Not a vulnerability scanner, compliance audit, malware detector, or security certification.",
+    "Does not confirm patch compliance, antivirus efficacy, firewall policy, or active encryption.",
+    "Does not assess SMART disk health, backup restore success, or workload suitability.",
+    "One brief CPU and memory observation cannot establish sustained performance or memory leaks.",
+    "Reported interface link speed is not measured throughput; link-up does not prove internet access.",
+    "Local filesystem calls can block in the operating system; Python cannot impose a hard timeout on them.",
+    "Hardware and battery values may be unavailable or inaccurate in virtual environments."
+  ]
+}

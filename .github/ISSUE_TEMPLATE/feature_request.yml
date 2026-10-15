@@ -1,0 +1,33 @@
+name: Feature request
+description: Suggest a practical, safe improvement
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: "We favor small, read-only, privacy-preserving features with explainable evidence and deterministic tests. Roadmap ideas are not commitments."
+  - type: textarea
+    id: problem
+    attributes:
+      label: What user problem would this solve?
+    validations:
+      required: true
+  - type: textarea
+    id: behavior
+    attributes:
+      label: Proposed behavior and example (synthetic only)
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Data source, platform support and evidence limitations
+  - type: textarea
+    id: privacy
+    attributes:
+      label: Privacy, security and compatibility considerations
+    validations:
+      required: true
+  - type: textarea
+    id: tests
+    attributes:
+      label: How might this be tested without accessing real devices?

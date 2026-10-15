@@ -1,0 +1,24 @@
+name: Documentation improvement
+description: Propose clearer installation, explanations or examples
+labels: [documentation]
+body:
+  - type: textarea
+    id: location
+    attributes:
+      label: Which documentation page or section is unclear?
+      description: Link or path, not private diagnostic output.
+    validations:
+      required: true
+  - type: textarea
+    id: issue
+    attributes:
+      label: What is confusing or missing?
+    validations:
+      required: true
+  - type: textarea
+    id: suggestion
+    attributes:
+      label: Suggested correction or example
+  - type: markdown
+    attributes:
+      value: "Use synthetic data in screenshots and examples. Never attach actual workstation reports."
