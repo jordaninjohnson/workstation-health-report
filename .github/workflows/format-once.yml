@@ -1,0 +1,37 @@
+# Temporary maintenance workflow. Remove immediately after the one-time formatting pass.
+name: One-time Python source formatting
+on:
+  push:
+    paths:
+      - .github/workflows/format-once.yml
+
+permissions: {}
+
+jobs:
+  apply-format:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository == 'jordaninjohnson/workstation-health-report'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: true
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.13'
+      - name: Install Ruff
+        run: python -m pip install "ruff>=0.9,<1"
+      - name: Apply safe automatic fixes and formatting
+        run: |
+          ruff check --fix . || true
+          ruff format .
+          ruff check . || true
+      - name: Commit formatting updates only
+        run: |
+          git diff --check
+          git add src tests
+          if ! git diff --cached --quiet; then
+            git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' commit -m 'style: format Python source and tests'
+            git push origin HEAD:main
+          fi
