@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import math
 import platform
 from datetime import datetime, timezone
 from typing import Any
@@ -52,6 +53,13 @@ def include_volume(part: Any) -> bool:
 
 def collect(*, sample_seconds: float = 0.25) -> dict[str, Any]:
     """Collect an allowlisted inventory; failures are isolated by category."""
+    if (
+        not isinstance(sample_seconds, (int, float))
+        or isinstance(sample_seconds, bool)
+        or not math.isfinite(sample_seconds)
+        or not 0 < sample_seconds <= 10
+    ):
+        raise ValueError("sample_seconds must be finite and in (0, 10]")
     issues: list[dict[str, str]] = []
 
     def attempt(component: str, func: Any, default: Any = None) -> Any:
@@ -108,7 +116,7 @@ def collect(*, sample_seconds: float = 0.25) -> dict[str, Any]:
     }
     cpu_pct = attempt("cpu", lambda: psutil.cpu_percent(interval=sample_seconds))
     resources = {
-        "cpu_percent": float(cpu_pct) if cpu_pct is not None else None,
+        "cpu_percent": percentage(cpu_pct),
         "cpu_sample_seconds": sample_seconds,
     }
 
