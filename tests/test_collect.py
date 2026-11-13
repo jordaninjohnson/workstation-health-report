@@ -132,3 +132,12 @@ def test_timeout_collector_continues(monkeypatch):
     assert data["inventory"]["resources"]["cpu_percent"] is None
     assert {i["reason"] for i in data["collection_issues"]} >= {"timeout"}
     assert "topsecret" not in json.dumps(data)
+
+
+@pytest.mark.parametrize("sample", [0, -1, float("nan"), float("inf"), 11, True, "1"])
+def test_invalid_sampling_rejected_before_collection(sample, monkeypatch):
+    probe = Mock(side_effect=AssertionError("must not collect"))
+    monkeypatch.setattr(collector.psutil, "boot_time", probe)
+    with pytest.raises(ValueError):
+        collector.collect(sample_seconds=sample)
+    probe.assert_not_called()
